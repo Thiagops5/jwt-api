@@ -5,6 +5,7 @@ const LogoutList = require('./logoutList.model');
 const authService = {
     login: async (email, password) => {
         const user = await userService.findByEmail(email);
+        if (!user) throw new Error('Invalid email or password');
         const isMatch = await bcrypt.compare(password, user.password);
         if (!user || !isMatch) {
             throw new Error('Invalid email or password');
