@@ -28,6 +28,20 @@ const readerController = {
       res.status(400).json({ error: error.message });
     }
   },
+
+
+  // busca todos os empréstimos de um leitor específico
+  findLoans: async (req, res) => {
+    try {
+      const loans = await readerService.findLoans(req.params.id);
+      res.json(loans);
+    } catch (error) {
+      if (error.message.includes('não encontrado')) {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
+    }
+  },
   update: async (req, res) => {
     try {
       const reader = await readerService.update(req.params.id, req.body);

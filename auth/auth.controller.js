@@ -21,6 +21,15 @@ const authController = {
         }
     },
 
+    async me(req, res) {
+        try {
+            const user = await authService.me(req.user.id);
+            res.json(user);
+        } catch (error) {
+            res.status(404).json({ error: error.message });
+        }
+    },
+
     async logout(req, res) {
         try {
             const token = req.headers.authorization.split(' ')[1];

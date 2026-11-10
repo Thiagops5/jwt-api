@@ -110,6 +110,20 @@ const authService = {
         
     },
 
+    // busca no banco de dados o usuario pelo id que vem do token, e volta o id, name, email e isAdmin, sem a senha
+    me: async (id) => {
+        const user = await userService.findById(id);
+        if (!user) {
+            throw new Error('Usuário não encontrado');
+        }
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin
+        };
+    },
+
 verifyToken: async (token) => {
         try {
             const isBlacklisted = await LogoutList.findOne(

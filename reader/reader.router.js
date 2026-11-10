@@ -5,6 +5,7 @@ const readerController = require('./reader.controller');
 router.post('/', readerController.create);
 router.get('/', readerController.findAll);
 router.get('/:id', readerController.findById);
+router.get('/:id/loans', readerController.findLoans);
 router.put('/:id', readerController.update);
 router.delete('/:id', readerController.delete);
 

@@ -1,4 +1,4 @@
-const { Reader, Loan } = require('../models');
+const { Reader, Loan, Book } = require('../models');
 
 const readerService = {
     create: async (readerData) => {
@@ -13,6 +13,16 @@ const readerService = {
     },
     findAll: async () => {
         return await Reader.findAll();
+    },
+    // bucando todos os empréstimos de um leitor específico que era um dos requisitos do trabalho e não tinha implementado nenhum serviço com o loan ainda no reader
+    findLoans: async (id) => {
+        const reader = await Reader.findByPk(id);
+        if (!reader) throw new Error('Leitor não encontrado');
+
+        return await Loan.findAll({
+            where: { readerId: id },
+            include: [Book]
+        });
     },
     update: async (id, readerData) => {
         const reader = await Reader.findByPk(id);
