@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Reader, Loan, Book } = require('../models');
 
 const readerService = {
@@ -18,6 +19,18 @@ const readerService = {
     findLoans: async (id) => {
         const reader = await Reader.findByPk(id);
         if (!reader) throw new Error('Leitor não encontrado');
+
+        await Loan.update(
+            { status: 'ATRASADO' },
+            {
+                where: {
+                    readerId: id,
+                    returnDate: null,
+                    dueDate: { [Op.lt]: new Date() },
+                    status: 'ATIVO'
+                }
+            }
+        );
 
         return await Loan.findAll({
             where: { readerId: id },

@@ -14,9 +14,9 @@ const Emprestimo = db.define('Emprestimo', {
         allowNull: true
     },
     status: {
-        type: DataTypes.ENUM('active', 'returned', 'overdue'),
+        type: DataTypes.ENUM('ATIVO', 'DEVOLVIDO', 'ATRASADO'),
         allowNull: false,
-        defaultValue: 'active'
+        defaultValue: 'ATIVO'
     },
     fine: {
         type: DataTypes.FLOAT,

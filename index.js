@@ -11,6 +11,8 @@ const authorRouter = require('./author/author.router');
 const readerRouter = require('./reader/reader.router');
 const bookRouter = require('./book/book.router');
 const loanRouter = require('./loan/loan.router');
+const reportRouter = require('./report/report.router');
+const seedAdmin = require('./config/seed');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,10 +29,16 @@ app.use('/v1/authors', authorRouter);
 app.use('/v1/readers', readerRouter);
 app.use('/v1/books', bookRouter);
 app.use('/v1/loans', loanRouter);
+app.use('/v1/reports', reportRouter);
 
 
 
+// sincroniza as tabelas, cria o primeiro admin (seed) e só então sobe o servidor
 db.sync()
-app.listen(PORT, () => {
-    console.log(`SERVIDOR RODANDO http://localhost:${PORT}`);
-});
+    .then(() => seedAdmin())
+    .catch((error) => console.error('Erro ao iniciar o banco/seed:', error))
+    .finally(() => {
+        app.listen(PORT, () => {
+            console.log(`SERVIDOR RODANDO http://localhost:${PORT}`);
+        });
+    });

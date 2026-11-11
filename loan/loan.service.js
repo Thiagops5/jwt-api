@@ -103,11 +103,33 @@ const loanService = {
 
 
     findById: async (id) => {
+        await Loan.update(
+            { status: 'ATRASADO' },
+            {
+                where: {
+                    returnDate: null,
+                    dueDate: { [Op.lt]: new Date() },
+                    status: 'ATIVO'
+                }
+            }
+        );
         return await Loan.findByPk(id, {
             include: [Book]
         });
     },
     findAll: async (statusQuery) => {
+        // Atualiza para ATRASADO os empréstimos cujo prazo (dueDate) já passou e ainda não foram devolvidos
+        await Loan.update(
+            { status: 'ATRASADO' },
+            {
+                where: {
+                    returnDate: null,
+                    dueDate: { [Op.lt]: new Date() },
+                    status: 'ATIVO'
+                }
+            }
+        );
+
         const filter = {};
 
         if (statusQuery) {
@@ -125,6 +147,17 @@ const loanService = {
     },
 
     findByReaderId: async (readerId) => {
+        await Loan.update(
+            { status: 'ATRASADO' },
+            {
+                where: {
+                    readerId,
+                    returnDate: null,
+                    dueDate: { [Op.lt]: new Date() },
+                    status: 'ATIVO'
+                }
+            }
+        );
         return await Loan.findAll({
             where: { readerId },
             include: ['Book']

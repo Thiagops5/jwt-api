@@ -14,6 +14,9 @@ const authService = {
         if (!user || !isMatch) {
             throw new Error('Invalid email or password');
         }
+        if (!user.active) {
+            throw new Error('User is deactivated');
+        }
         const token = jwt.sign(
             {
              id: user.id,
@@ -22,7 +25,8 @@ const authService = {
             //  usando o isAdmin pois pesquisei e disseram que fala que ele é melhor do que ficar puxando a senha toda vez quando ele pode puxar somente o token que é mais seguro, e o isAdmin é para saber se ele é admin ou user 
               isAdmin: user.isAdmin
             }, process.env.JWT_SECRET, 
-            { expiresIn: '5h', });
+            // requisito do trabalho que era a mudança do token de 5 horas para 15 minutos
+            { expiresIn: '15m', });
 
         const refreshTokenValue = crypto.randomBytes(40).toString('hex');
         const expiresAt = new Date();

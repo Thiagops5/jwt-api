@@ -31,6 +31,26 @@ const userController = {
             res.status(400).json({ error: error.message });
         }
     },
+    update: async (req, res) => {
+        try {
+            const updatedUser = await userService.update(req.params.id, req.body);
+            res.json(updatedUser);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    },
+    toggleActive: async (req, res) => {
+        try {
+            const { active } = req.body;
+            if (active === undefined) {
+                return res.status(400).json({ error: 'Active field is required' });
+            }
+            const updatedUser = await userService.toggleActive(req.params.id, active);
+            res.json(updatedUser);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    },
     findAll: async (req, res) => {
         try {
             const users = await userService.findAll();

@@ -2,7 +2,11 @@ const loanService = require('./loan.service');
 const loanController = {
   create: async (req, res) => {
     try {
-      const loan = await loanService.create(req.body);
+      // o create agora injeta userId: req.user.id (vindo do token JWT do atendente logado) junto com o req.body.
+      const loan = await loanService.create({
+        ...req.body,
+        userId: req.user.id
+      });
       res.status(201).json(loan);
     } catch (error) {
       res.status(400).json({ error: error.message });
