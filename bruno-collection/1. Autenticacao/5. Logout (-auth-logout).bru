@@ -1,0 +1,21 @@
+meta {
+  name: 5. Logout (/auth/logout)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "refreshToken": "COLE_O_REFRESH_TOKEN_AQUI"
+  }
+}

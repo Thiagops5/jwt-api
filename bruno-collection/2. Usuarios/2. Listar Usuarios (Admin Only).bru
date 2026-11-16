@@ -1,0 +1,15 @@
+meta {
+  name: 2. Listar Usuarios (Admin Only)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/user
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,23 @@
+meta {
+  name: 4. Editar Autor (ID 1 - Isaac Asimov)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/authors/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Isaac Asimov",
+    "nationality": "Russo",
+    "birthDate": "1920-01-02"
+  }
+}

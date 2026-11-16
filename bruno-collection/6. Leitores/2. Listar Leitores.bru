@@ -1,0 +1,15 @@
+meta {
+  name: 2. Listar Leitores
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/readers
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

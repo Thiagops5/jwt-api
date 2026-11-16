@@ -1,0 +1,18 @@
+meta {
+  name: 1. Login Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@biblioteca.com",
+    "password": "123456"
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: 5. Excluir Autor (Bloqueio 409 se tiver livro)
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/authors/4
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

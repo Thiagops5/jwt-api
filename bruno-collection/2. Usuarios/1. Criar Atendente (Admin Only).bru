@@ -1,0 +1,25 @@
+meta {
+  name: 1. Criar Atendente (Admin Only)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/user
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Novo Atendente",
+    "username": "novoatendente",
+    "email": "novo@biblioteca.com",
+    "password": "123456",
+    "isAdmin": false
+  }
+}

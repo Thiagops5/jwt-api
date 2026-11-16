@@ -1,0 +1,15 @@
+meta {
+  name: 4. Buscar Livro por ID (ID 1 - Memorias do Subsolo)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/books/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

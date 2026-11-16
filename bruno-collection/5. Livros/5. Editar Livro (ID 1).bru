@@ -1,0 +1,25 @@
+meta {
+  name: 5. Editar Livro (ID 1)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/books/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Memórias do Subsolo",
+    "year": 1864,
+    "totalCopies": 5,
+    "availableCopies": 2,
+    "authors": [4]
+  }
+}

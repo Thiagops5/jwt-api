@@ -1,0 +1,19 @@
+meta {
+  name: 4. Listar Emprestimos DEVOLVIDOS
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/loans
+  body: none
+  auth: bearer
+}
+
+params:query {
+  status: DEVOLVIDO
+}
+
+auth:bearer {
+  token: {{token}}
+}

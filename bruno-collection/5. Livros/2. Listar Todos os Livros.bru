@@ -1,0 +1,15 @@
+meta {
+  name: 2. Listar Todos os Livros
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/books
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,19 @@
+meta {
+  name: 3. Listar Emprestimos ATIVOS
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/loans
+  body: none
+  auth: bearer
+}
+
+params:query {
+  status: ATIVO
+}
+
+auth:bearer {
+  token: {{token}}
+}

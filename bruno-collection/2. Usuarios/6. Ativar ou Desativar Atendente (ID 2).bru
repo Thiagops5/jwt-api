@@ -1,0 +1,21 @@
+meta {
+  name: 6. Ativar ou Desativar Atendente (ID 2)
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/user/2/active
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "active": false
+  }
+}

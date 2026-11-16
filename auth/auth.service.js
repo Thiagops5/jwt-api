@@ -7,11 +7,11 @@ const RefreshToken = require('./refreshToken.model');
 const authService = {
     login: async (email, password) => {
 
-        // não é um erro ele comparar o user duas vezes, um no isMatch e outro no if? eu não poderia apagar a linha que fala if (!user) throw new Error('Invalid email or password'); ?
+
         const user = await userService.findByEmail(email);
         if (!user) throw new Error('Invalid email or password');
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!user || !isMatch) {
+        if (!isMatch) {
             throw new Error('Invalid email or password');
         }
         if (!user.active) {

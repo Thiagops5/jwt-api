@@ -1,0 +1,15 @@
+meta {
+  name: 2. Listar Autores
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/authors
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

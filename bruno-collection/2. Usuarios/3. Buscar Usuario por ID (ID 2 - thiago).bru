@@ -1,0 +1,15 @@
+meta {
+  name: 3. Buscar Usuario por ID (ID 2 - thiago)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/user/2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

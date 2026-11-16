@@ -1,0 +1,15 @@
+meta {
+  name: 4. Buscar Usuario por Email (thiago@biblioteca.com)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/user/email/thiago@biblioteca.com
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

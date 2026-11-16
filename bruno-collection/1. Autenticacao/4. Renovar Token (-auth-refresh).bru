@@ -1,0 +1,17 @@
+meta {
+  name: 4. Renovar Token (/auth/refresh)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "COLE_O_REFRESH_TOKEN_AQUI"
+  }
+}

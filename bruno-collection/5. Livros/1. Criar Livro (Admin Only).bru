@@ -1,0 +1,27 @@
+meta {
+  name: 1. Criar Livro (Admin Only)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/books
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Crime e Castigo",
+    "isbn": "9788573266467",
+    "year": 1866,
+    "totalCopies": 4,
+    "availableCopies": 4,
+    "categoryId": 4,
+    "authors": [4]
+  }
+}

@@ -1,0 +1,21 @@
+meta {
+  name: 3. Listar com Filtro (?title=Subsolo&categoryId=4)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/books
+  body: none
+  auth: bearer
+}
+
+params:query {
+  title: Subsolo
+  categoryId: 4
+  available: true
+}
+
+auth:bearer {
+  token: {{token}}
+}

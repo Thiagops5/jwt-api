@@ -1,0 +1,23 @@
+meta {
+  name: 5. Editar Atendente (ID 2)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/user/2
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "thiago",
+    "username": "thiago02",
+    "email": "thiago@biblioteca.com"
+  }
+}

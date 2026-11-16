@@ -1,0 +1,18 @@
+meta {
+  name: 2. Login Atendente (Glauter)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "glauter@biblioteca.com",
+    "password": "123456"
+  }
+}

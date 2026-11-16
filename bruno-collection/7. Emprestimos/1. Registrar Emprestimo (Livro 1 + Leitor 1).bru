@@ -1,0 +1,22 @@
+meta {
+  name: 1. Registrar Emprestimo (Livro 1 + Leitor 1)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/loans
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "bookId": 1,
+    "readerId": 1
+  }
+}

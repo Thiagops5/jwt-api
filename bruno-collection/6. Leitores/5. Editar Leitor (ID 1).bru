@@ -1,0 +1,23 @@
+meta {
+  name: 5. Editar Leitor (ID 1)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/readers/1
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Thiago Leitor",
+    "email": "Thiago@leitor.com",
+    "phone": "44999999999"
+  }
+}

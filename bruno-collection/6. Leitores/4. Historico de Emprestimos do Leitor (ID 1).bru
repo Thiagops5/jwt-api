@@ -1,0 +1,15 @@
+meta {
+  name: 4. Historico de Emprestimos do Leitor (ID 1)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/readers/1/loans
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,23 @@
+meta {
+  name: 1. Criar Autor (Admin Only)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/authors
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Machado de Assis",
+    "nationality": "Brasileiro",
+    "birthDate": "1839-06-21"
+  }
+}
