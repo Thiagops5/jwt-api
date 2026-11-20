@@ -8,7 +8,7 @@ const Author = db.define('Author', {
     },
     nationality: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     birthDate: {
         type: DataTypes.TEXT,
