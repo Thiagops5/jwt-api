@@ -1,297 +1,144 @@
-# Trabalho Integrador – Sistema de Biblioteca com JWT e Refresh Token
+# Sistema de Biblioteca — Back-end (`jwt-api`)
 
-26/10/2026 · Projetos de exemplo: [jwt-api (back-end)](https://github.com/ADS-Unipar/jwt-api) e [jwt-app (front-end)](https://github.com/ADS-Unipar/jwt-app)
+API RESTful para gestão de biblioteca desenvolvida com **Node.js**, **Express 5**, **Sequelize**, **SQLite** e autenticação **JWT (Access Token + Refresh Token com rotação)**.
 
-## 1. Objetivo
+O sistema gerencia **atendentes e administradores**, **categorias**, **autores**, **livros** (com múltiplos autores e controle de estoque), **leitores**, **empréstimos e devoluções** (com cálculo automático de multa e transações no banco) e **relatório de dashboard**.
 
-Evoluir os projetos **jwt-api** (Node.js + Express 5 + Sequelize + SQLite + JWT) e **jwt-app** (front-end) até formarem um **sistema de gestão de biblioteca** completo. O sistema deve ter login com **access token + refresh token**, cadastro de **categorias**, **autores**, **livros**, **leitores**, **atendentes** e o controle de **empréstimos e devoluções**.
+---
 
-Ao final, o aluno deve demonstrar que sabe:
+## 1. Como instalar e rodar o projeto
 
-- Organizar uma API em módulos (`router → controller → service → model`), como já é feito em `auth/` e `user/`.
-- Modelar relacionamentos com Sequelize (1:N e N:N).
-- Implementar autenticação stateless com JWT, renovação por refresh token e revogação no logout.
-- Proteger rotas por perfil (administrador x atendente).
-- Consumir a API no front-end, renovando o token automaticamente sem deslogar o usuário.
-
-## 2. Passo a passo: clonar e conectar os dois projetos
-
-### 2.1 Pré-requisitos
-
+### Pré-requisitos
 - Node.js 20 ou superior e npm
-- Git
-- VS Code (recomendado) e um cliente HTTP (Insomnia, Postman ou a extensão Thunder Client)
+- Front-end do projeto (`jwt-app`) rodando na porta `3000`
 
-### 2.2 Clonar os repositórios
-
-Crie uma pasta para o trabalho e clone os dois projetos lado a lado:
+### Passo a passo
 
 ```bash
-mkdir biblioteca && cd biblioteca
-git clone https://github.com/ADS-Unipar/jwt-api.git
-git clone https://github.com/ADS-Unipar/jwt-app.git
-```
-
-Estrutura esperada:
-
-```text
-biblioteca/
-├── jwt-api/   ← back-end (porta 3000)
-└── jwt-app/   ← front-end
-```
-
-> Dica: para entregar, faça um **fork** de cada repositório na sua conta (ou do grupo) e clone o fork, assim você consegue dar `git push`.
-
-### 2.3 Subir a API
-
-```bash
+# 1. Entre na pasta da API e instale as dependências
 cd jwt-api
 npm install
-cp .envex .env        # no Windows: copy .envex .env
+
+# 2. Crie o arquivo .env a partir do exemplo
+cp .envex .env        # no Windows (CMD): copy .envex .env
 ```
 
-Edite o `.env`:
+### Gerando as chaves secretas com `npx new-pass-me`
+
+Para gerar chaves fortes e aleatórias para o `JWT_SECRET` e o `JWT_REFRESH_SECRET`, execute no terminal:
+
+```bash
+npx new-pass-me
+```
+
+Rode o comando duas vezes (uma para cada chave) e preencha o seu arquivo `.env`:
 
 ```env
-JWT_SECRET=troque-por-uma-chave-grande-e-aleatoria
-JWT_REFRESH_SECRET=outra-chave-diferente-da-primeira
-PORT=3000
+JWT_SECRET=chave-gerada-pelo-npx-new-pass-me
+JWT_REFRESH_SECRET=outra-chave-gerada-pelo-npx-new-pass-me
+PORT=3001
 ```
 
-Inicie:
+> **Observação sobre a porta:** A API roda na porta **`3001`** para que o front-end em Next.js (`jwt-app`) possa rodar na sua porta padrão **`3000`**, já liberada no CORS do `index.js`.
+
+### Iniciando o servidor
 
 ```bash
 npm start
-# SERVIDOR RODANDO http://localhost:3000
+# SERVIDOR RODANDO http://localhost:3001
 ```
 
-### 2.4 Liberar o CORS (obrigatório para o front conectar)
+---
 
-A API original **não tem CORS**. Sem isso, o navegador bloqueia as chamadas do front-end, que roda em outra porta.
+## 2. Usuário Administrador do Seed
 
-```bash
-npm install cors
-```
+Ao iniciar o servidor (`npm start`), o `db.sync()` cria as tabelas no SQLite e executa automaticamente o seed (`config/seed.js`). Caso ainda não exista nenhum administrador cadastrado, o sistema cria o primeiro admin com as credenciais padrão:
 
-No `index.js`, antes das rotas:
-
-```js
-const cors = require('cors');
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
-```
-
-Ajuste `origin` para a porta em que o seu front roda (5173 no Vite, 3001 no CRA, 8081 no Expo web etc.).
-
-### 2.5 Corrigir o bug do login
-
-Em `auth/auth.service.js`, a senha é comparada **antes** de verificar se o usuário existe. Com um e-mail inexistente a API quebra em vez de responder 401. Corrija:
-
-```js
-const user = await userService.findByEmail(email);
-if (!user) throw new Error('Invalid email or password');
-const isMatch = await bcrypt.compare(password, user.password);
-if (!isMatch) throw new Error('Invalid email or password');
-```
-
-### 2.6 Criar o primeiro usuário e testar o login
-
-```bash
-curl -X POST http://localhost:3000/v1/user \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Admin","username":"admin","email":"admin@biblioteca.com","password":"123456","isAdmin":true}'
-
-curl -X POST http://localhost:3000/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@biblioteca.com","password":"123456"}'
-```
-
-Se vier `{ "token": "eyJ..." }`, a API está funcionando.
-
-### 2.7 Subir o front-end e apontar para a API
-
-Em outro terminal:
-
-```bash
-cd ../jwt-app
-npm install
-```
-
-Localize no projeto onde fica a URL da API (arquivo `.env`, `src/services/api.js` ou similar) e aponte para `http://localhost:3000/v1`. Em um projeto Vite, por exemplo:
-
-```env
-VITE_API_URL=http://localhost:3000/v1
-```
-
-```bash
-npm run dev
-```
-
-Abra o endereço exibido no terminal, faça login com o usuário criado no passo 2.6 e confira, na aba **Network** do DevTools, que a chamada a `/v1/auth/login` retornou 200.
-
-### 2.8 Problemas comuns
-
-| Sintoma | Causa provável | Solução |
+| Campo | Valor padrão | Variável opcional no `.env` |
 |---|---|---|
-| Erro de CORS no console | CORS não habilitado ou `origin` errado | Revise o passo 2.4 |
-| `secretOrPrivateKey must have a value` | `.env` não criado ou `JWT_SECRET` vazio | Revise o passo 2.3 |
-| Login com e-mail errado derruba a API | Bug original do `auth.service` | Revise o passo 2.5 |
-| `ECONNREFUSED` no front | API parada ou porta diferente | Confira se a API está rodando e a URL do front |
-| Dados "fantasmas" no banco | `database.sqlite` veio versionado no repositório | Apague o arquivo e adicione `database.sqlite` ao `.gitignore` |
+| **Nome** | `Admin` | `ADMIN_NAME` |
+| **Usuário** | `admin` | `ADMIN_USERNAME` |
+| **E-mail** | `admin@biblioteca.com` | `ADMIN_EMAIL` |
+| **Senha** | `123456` | `ADMIN_PASSWORD` |
+| **Perfil** | Administrador (`isAdmin: true`) | — |
 
-## 3. Escopo do sistema
+---
 
-### 3.1 Perfis de usuário
+## 3. Arquitetura e Organização
 
-- **Administrador** (`isAdmin = true`): gerencia atendentes, categorias, autores e livros, e vê todos os relatórios.
-- **Atendente** (`isAdmin = false`): cadastra leitores, registra empréstimos e devoluções e consulta o acervo.
-
-O modelo `User` já existente representa os atendentes e administradores.
-
-### 3.2 Entidades
-
-| Entidade | Campos mínimos | Relacionamentos |
-|---|---|---|
-| **User** (atendente) | name, username, email, password, isAdmin, active | registra muitos Empréstimos |
-| **Category** | name (único), description | possui muitos Livros |
-| **Author** | name, nationality, birthDate | N:N com Livro |
-| **Book** | title, isbn (único), year, totalCopies, availableCopies | pertence a uma Categoria; N:N com Autor (`BookAuthor`) |
-| **Reader** (leitor) | name, cpf (único), email, phone | possui muitos Empréstimos |
-| **Loan** (empréstimo) | loanDate, dueDate, returnDate, status, fine | pertence a Livro, Leitor e User |
-| **RefreshToken** | token, userId, expiresAt, revoked | pertence a User |
-
-### 3.3 Regras de negócio
-
-1. Só é possível emprestar um livro com `availableCopies > 0`. O empréstimo decrementa o estoque e a devolução incrementa.
-2. O prazo padrão é de **7 dias** (`dueDate = loanDate + 7`).
-3. Um leitor pode ter no máximo **3 empréstimos ativos** e não pode pegar livros se tiver algum atrasado.
-4. Na devolução após o prazo, calcular multa de **R$ 1,00 por dia de atraso** e gravar em `fine`.
-5. `status` do empréstimo: `ATIVO`, `DEVOLVIDO` ou `ATRASADO` (atrasado é calculado quando `dueDate < hoje` e não há `returnDate`).
-6. Não é permitido excluir categoria, autor ou livro que tenha vínculos ativos. Retorne **409 Conflict** com mensagem clara.
-7. Empréstimo e devolução devem usar **transação do Sequelize** (`db.transaction`), para o estoque nunca ficar inconsistente.
-8. Atendente desativado (`active = false`) não consegue fazer login.
-
-## 4. Autenticação com refresh token
-
-Hoje a API gera um único token de 1 hora e usa uma blacklist (`logout_list`) no logout. O trabalho é trocar isso por um fluxo de **dois tokens**.
-
-### 4.1 Requisitos
-
-- **Access token**: JWT assinado com `JWT_SECRET`, validade de **15 minutos**, payload com `id`, `name`, `email` e `isAdmin`. Enviado no header `Authorization: Bearer <token>`.
-- **Refresh token**: assinado com `JWT_REFRESH_SECRET` (ou string aleatória com `crypto.randomBytes`), validade de **7 dias**, **salvo na tabela `RefreshToken`**.
-- `POST /v1/auth/login` retorna `{ accessToken, refreshToken, user }`.
-- `POST /v1/auth/refresh` recebe `{ refreshToken }`, valida se existe no banco, não está revogado nem expirado, e devolve um **novo par** de tokens. O refresh antigo é revogado (**rotação de refresh token**).
-- Se um refresh token já revogado for reutilizado, revogue **todos** os refresh tokens daquele usuário (detecção de roubo de token).
-- `POST /v1/auth/logout` revoga o refresh token informado. A tabela `logout_list` pode ser removida ou mantida para o access token, com justificativa no README.
-- `GET /v1/auth/me` retorna os dados do usuário logado.
-- Middleware `isAdmin` que retorna **403** quando um atendente acessa rota de administrador.
-- Corrigir o middleware atual para responder **401** (e não 400) quando o token é inválido ou expirou. O front depende desse código para saber que precisa renovar.
-
-### 4.2 Fluxo esperado
-
-```text
-1. Login            → API devolve accessToken (15 min) + refreshToken (7 dias)
-2. Requisições      → Authorization: Bearer <accessToken>
-3. Access expira    → API responde 401
-4. Front intercepta → POST /auth/refresh { refreshToken }
-5. API rotaciona    → revoga o refresh antigo e devolve um novo par
-6. Front repete     → refaz a requisição original com o novo accessToken
-7. Refresh inválido → front limpa a sessão e manda para a tela de login
-```
-
-### 4.3 No front-end
-
-- Guardar os tokens (localStorage/sessionStorage na web, AsyncStorage/SecureStore no mobile) e explicar no README os riscos da escolha.
-- Criar um **interceptor** (Axios ou wrapper do `fetch`) que, ao receber 401, chama `/auth/refresh` **uma única vez** e repete a requisição.
-- Se várias requisições derem 401 ao mesmo tempo, deve sair **apenas uma** chamada de refresh; as demais aguardam numa fila.
-- Rotas/telas protegidas: sem sessão válida, redireciona para o login.
-- Esconder menus de administrador para atendentes (sem depender só disso: a API também deve bloquear).
-
-## 5. Endpoints mínimos da API
-
-Todas as rotas abaixo, exceto login e refresh, exigem access token. **(A)** = somente administrador.
-
-| Método | Rota | Descrição |
-|---|---|---|
-| POST | `/v1/auth/login` | Login, retorna o par de tokens |
-| POST | `/v1/auth/refresh` | Renova o par de tokens |
-| POST | `/v1/auth/logout` | Revoga o refresh token |
-| GET | `/v1/auth/me` | Usuário logado |
-| GET / POST | `/v1/user` | Listar / criar atendente **(A)** |
-| PUT / PATCH | `/v1/user/:id` e `/v1/user/:id/active` | Editar / ativar-desativar atendente **(A)** |
-| GET / POST / PUT / DELETE | `/v1/categories` | CRUD de categorias (escrita **A**) |
-| GET / POST / PUT / DELETE | `/v1/authors` | CRUD de autores (escrita **A**) |
-| GET / POST / PUT / DELETE | `/v1/books` | CRUD de livros com autores e categoria (escrita **A**) |
-| GET | `/v1/books?title=&categoryId=&authorId=&available=true` | Busca com filtros |
-| GET / POST / PUT | `/v1/readers` | Cadastro de leitores |
-| GET | `/v1/readers/:id/loans` | Histórico do leitor |
-| POST | `/v1/loans` | Registrar empréstimo `{ bookId, readerId }` |
-| PATCH | `/v1/loans/:id/return` | Registrar devolução |
-| GET | `/v1/loans?status=ATIVO\|ATRASADO\|DEVOLVIDO` | Listar empréstimos |
-| GET | `/v1/reports/dashboard` | Totais: livros, emprestados, atrasados, multas **(A)** |
-
-Atenção: a rota `POST /v1/user` hoje é pública. No sistema final, apenas administradores podem criar atendentes. Crie um **seed** que gera o primeiro admin ao iniciar a API.
-
-Organize cada recurso numa pasta própria, seguindo o padrão do projeto:
+O projeto segue a separação em módulos por recurso (`router → controller → service → model`), centralizando os relacionamentos em `models/index.js`:
 
 ```text
 jwt-api/
-├── auth/        (router, controller, service, middleware, refreshToken.model)
-├── user/
-├── category/
-├── author/
-├── book/
-├── reader/
-├── loan/
-├── config/db.js
-├── models/index.js   ← associações (hasMany, belongsTo, belongsToMany)
+├── auth/                (router, controller, service, middleware, refreshToken.model, logoutList.model)
+├── user/                (atendentes e administradores)
+├── category/            (categorias de livros)
+├── author/              (autores)
+├── book/                (livros, filtros e associação N:N com autores)
+├── reader/              (leitores e histórico de empréstimos)
+├── loan/                (empréstimos e devoluções com transação e cálculo de multa)
+├── report/              (totais do dashboard para administradores)
+├── config/
+│   ├── db.js            (conexão Sequelize + SQLite)
+│   └── seed.js          (criação automática do primeiro admin)
+├── models/
+│   └── index.js         (associações 1:N e N:N via BookAuthor)
+├── bruno-collection/    (coleção nativa do Bruno pronta para abrir)
+├── colecao-biblioteca.json (coleção exportada no formato Postman v2.1 / Insomnia / Bruno)
 └── index.js
 ```
 
-## 6. Telas mínimas do front-end
+---
 
-1. **Login** com validação e mensagem de erro.
-2. **Dashboard** com cards: total de livros, empréstimos ativos, atrasados e multas.
-3. **Categorias** e **Autores**: listagem, cadastro, edição e exclusão.
-4. **Livros**: listagem com busca e filtros, cadastro com seleção de categoria e de vários autores, indicação de exemplares disponíveis.
-5. **Leitores**: cadastro e histórico de empréstimos.
-6. **Empréstimos**: novo empréstimo (buscar leitor + livro), lista com filtro de status, botão de devolução mostrando a multa.
-7. **Atendentes** (somente admin): cadastro e ativar/desativar.
-8. Botão de **logout** e nome do usuário logado no topo.
+## 4. Decisões Técnicas Tomadas
 
-## 7. Entregas
+1. **Manutenção da `logout_list` junto com a tabela `RefreshToken`:**
+   - **Justificativa:** Como o JWT de acesso (`accessToken`) é *stateless* e possui validade de **15 minutos**, se o logout apenas revogasse o `refreshToken` na tabela `RefreshToken`, o `accessToken` emitido antes do logout continuaria funcionando até completar os 15 minutos.
+   - Mantendo a tabela `logout_list` como *blacklist* para o `accessToken` em conjunto com o `revoked: true` na tabela `RefreshToken`, o logout invalida **imediatamente** ambos os tokens.
+2. **Rotação de Refresh Token e Detecção de Roubo/Reuso:**
+   - O `refreshToken` é gerado com `crypto.randomBytes(40).toString('hex')`, possui validade de **7 dias** e fica salvo na tabela `RefreshToken`.
+   - A cada chamada em `POST /v1/auth/refresh`, o refresh token usado é marcado como `revoked = true` e um novo par (`accessToken` + `refreshToken`) é emitido.
+   - Se alguém tentar reutilizar um `refreshToken` que já consta como `revoked = true`, a API identifica a tentativa de reutilização indevida e **revoga todos os refresh tokens daquele usuário** por segurança.
+3. **Ocultação do Hash da Senha (`password`) nas Respostas:**
+   - Mesmo com a senha armazenada usando hash `bcrypt`, definimos `User.prototype.toJSON` no `user.model.js` e `attributes: { exclude: ['password'] }` nas buscas do `user.service.js` para garantir que o hash nunca seja enviado no JSON de resposta (prevenindo ataques de dicionário/força bruta *offline*).
+4. **Transações no Banco (`db.transaction`) e Status `ATRASADO`:**
+   - Tanto o registro de empréstimo (que valida limite de 3 empréstimos ativos, ausência de atrasos e estoque `availableCopies > 0`, decrementando `-1`) quanto a devolução (que calcula a multa de **R$ 1,00 por dia de atraso** e incrementa `+1` no estoque) rodam dentro de `db.transaction()` do Sequelize.
+   - Antes das listagens e buscas de empréstimos, o sistema atualiza automaticamente para `status = 'ATRASADO'` qualquer empréstimo ainda não devolvido (`returnDate: null`) cujo `dueDate` já tenha passado, permitindo filtrar diretamente por `?status=ATRASADO`.
+5. **Proteção contra Exclusão com Vínculos (`409 Conflict`):**
+   - Não é permitido excluir categorias com livros, autores com livros, livros com empréstimos ou leitores com histórico de empréstimos; a API retorna status **409 Conflict** com mensagem explicativa. Atendentes não possuem rota de exclusão, sendo ativados ou desativados via `PATCH /v1/user/:id/active`.
 
-| Etapa | Conteúdo |
-|---|---|
-| **1** | Projetos clonados e conectados (seção 2), CORS e bug do login corrigidos, modelagem das entidades com associações |
-| **2** | CRUDs de categoria, autor, livro e leitor na API, testados no Insomnia/Postman |
-| **3** | Access + refresh token com rotação, middleware de admin, empréstimo/devolução com regras e transação |
-| **4** | Front-end completo com interceptor de refresh |
+---
 
-O que entregar:
+## 5. Endpoints da API
 
-- Link dos dois repositórios (fork) com histórico de commits de todos os integrantes.
-- `README.md` em cada projeto: como instalar, variáveis de ambiente, usuário admin do seed e decisões tomadas.
-- Coleção do Insomnia/Postman exportada (`.json`) dentro do `jwt-api`.
-- `.env` **fora** do repositório; apenas o `.envex` atualizado com as novas variáveis.
-- Vídeo curto (até 5 min) demonstrando: login, token expirando e sendo renovado sozinho, empréstimo, devolução com multa e bloqueio de atendente em rota de admin.
+Todas as rotas abaixo, exceto `/v1/auth/login` e `/v1/auth/refresh`, exigem o cabeçalho `Authorization: Bearer <accessToken>`.  
+**(A)** = Rota restrita a Administrador (`verifyAdmin`, retorna **403** para atendentes).
 
-> Para demonstrar o refresh no vídeo, deixe o access token com validade de 30 segundos temporariamente.
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/v1/auth/login` | Login, retorna `{ accessToken, refreshToken, user }` |
+| `POST` | `/v1/auth/refresh` | Rotaciona o refresh token e devolve novo par de tokens |
+| `POST` | `/v1/auth/logout` | Revoga o refresh token e invalida o access token atual |
+| `GET` | `/v1/auth/me` | Retorna os dados do usuário logado |
+| `GET` / `POST` | `/v1/user` | Listar / criar atendente **(A)** |
+| `GET` | `/v1/user/:id` e `/v1/user/email/:email` | Buscar usuário por ID ou e-mail |
+| `PUT` | `/v1/user/:id` | Editar nome, usuário e e-mail do atendente **(A)** |
+| `PATCH` | `/v1/user/:id/active` | Ativar ou desativar atendente `{ "active": true\|false }` **(A)** |
+| `GET` / `POST` / `PUT` / `DELETE` | `/v1/categories` | CRUD de categorias (escrita **A**) |
+| `GET` / `POST` / `PUT` / `DELETE` | `/v1/authors` | CRUD de autores (escrita **A**) |
+| `GET` / `POST` / `PUT` / `DELETE` | `/v1/books` | CRUD de livros com categoria e autores (escrita **A**) |
+| `GET` | `/v1/books?title=&categoryId=&authorId=&available=true` | Busca de livros com filtros combinados |
+| `GET` / `POST` / `PUT` / `DELETE` | `/v1/readers` | CRUD de leitores |
+| `GET` | `/v1/readers/:id/loans` | Histórico de empréstimos de um leitor específico |
+| `POST` | `/v1/loans` | Registrar empréstimo `{ bookId, readerId }` |
+| `PATCH` | `/v1/loans/:id/return` | Registrar devolução e calcular multa se houver atraso |
+| `GET` | `/v1/loans?status=ATIVO\|ATRASADO\|DEVOLVIDO` | Listar empréstimos (com filtro opcional por status) |
+| `GET` | `/v1/reports/dashboard` | Totais: livros, exemplares, empréstimos ativos, atrasados e multas **(A)** |
 
-## 8. Critérios de avaliação
+---
 
-| Critério | Peso |
-|---|---|
-| Autenticação: login, refresh com rotação, logout, 401/403 corretos | 25% |
-| Modelagem e associações Sequelize | 15% |
-| Regras de negócio de empréstimo/devolução (estoque, limite, multa, transação) | 20% |
-| CRUDs completos e validações com mensagens claras | 15% |
-| Front-end: integração, interceptor de refresh, telas e usabilidade | 15% |
-| Organização do código, README, commits e apresentação | 10% |
+## 6. Coleção de Testes (Bruno / Postman / Insomnia)
 
-## 9. Desafios extras (até +1 ponto)
-
-- Enviar o refresh token em **cookie httpOnly** em vez do corpo da resposta.
-- **Reserva** de livro sem exemplar disponível, com fila por ordem de pedido.
-- **Paginação** nas listagens (`?page=&limit=`).
-- Validação de entrada com **Joi** ou **Zod**.
-- **Swagger** com a documentação da API.
+Dentro da pasta `jwt-api` estão disponíveis duas formas para testar todas as rotas:
+1. **`colecao-biblioteca.json`**: arquivo exportado no padrão Postman Collection v2.1 (compatível com **Postman**, **Insomnia** e **Bruno** via *Import Collection*).
+2. **`bruno-collection/`**: pasta nativa do **Bruno** (basta clicar em *Open Collection* no Bruno e selecionar a pasta `jwt-api/bruno-collection`).
